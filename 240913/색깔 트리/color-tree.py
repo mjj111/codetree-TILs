@@ -69,10 +69,11 @@ def change(line):
     queue.append(nodes[node_number])
 
     now_node = nodes[node_number]
-    parent_node = nodes[now_node.parent_number]
-    parent_node.colors[color] += 1
-    for c, count in now_node.colors.items():
-        parent_node.colors[c] -= count
+    if(now_node.parent_number != -1):
+        parent_node = nodes[now_node.parent_number]
+        parent_node.colors[color] += 1
+        for c, count in now_node.colors.items():
+            parent_node.colors[c] -= count
 
     while queue:
         now_node = queue.popleft()
