@@ -4,7 +4,7 @@ class Rail:
     def __init__(self, size):
         self.size = size
         self.now_index = 0
-        # 빈 자리를 포함하지 않고 초밥이 있는 자리만 저장
+        # 초밥이 있는 자리만 저장
         self.sits = collections.defaultdict(lambda: collections.defaultdict(int))
 
     def get_foods(self, x):
@@ -16,7 +16,7 @@ class Rail:
         self.sits[location][name] += 1
 
     def remove_food(self, location, name):
-        # 초밥을 다 먹으면 해당 자리의 초밥 정보를 삭제하여 메모리 절약
+        # 초밥이 다 먹히면 해당 자리의 초밥 정보를 삭제하여 메모리 절약
         if self.sits[location][name] == 0:
             del self.sits[location][name]
         if not self.sits[location]:
@@ -25,7 +25,7 @@ class Rail:
     def getCount(self):
         return sum(sum(food_count.values()) for food_count in self.sits.values())
 
-class Clinet:
+class Client:
     def __init__(self, x, name, n):
         self.x = x
         self.name = name
@@ -46,7 +46,8 @@ def rotate(t):
     done_clients = []
     for client in clients:
         foods = rail.get_foods(client.x)
-        while client.n > 0 and foods[client.name] > 0:
+        # 손님이 있는 위치의 초밥을 먹는 과정
+        while client.n > 0 and foods.get(client.name, 0) > 0:
             client.n -= 1
             foods[client.name] -= 1
 
@@ -61,19 +62,21 @@ def rotate(t):
 def offer_food(t, x, name):
     rotate(t)
     rail.put(x, name)
+    # 새로 음식이 추가된 이후 즉시 확인
     update_clients()
 
 def sit(t, x, name, n):
     rotate(t)
-    new_client = Clinet(x, name, n)
+    new_client = Client(x, name, n)
     clients.add(new_client)
+    # 손님이 즉시 음식을 먹을 수 있게 처리
     update_clients()
 
 def update_clients():
     done_clients = []
     for client in clients:
         foods = rail.get_foods(client.x)
-        while client.n > 0 and foods[client.name] > 0:
+        while client.n > 0 and foods.get(client.name, 0) > 0:
             client.n -= 1
             foods[client.name] -= 1
 
@@ -89,6 +92,7 @@ def take_picture(t):
     rotate(t)
     print(f"{len(clients)} {rail.getCount()}")
 
+# 메인 코드
 L, Q = map(int, input().split())
 clients = set()
 rail = Rail(L)
