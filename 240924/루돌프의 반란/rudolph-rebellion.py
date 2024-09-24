@@ -8,7 +8,7 @@ def is_out(x, y) :
     return x < 0 or x >= n or y < 0 or y >= n
 
 def get_distance(a,b,c,d):
-    return math.sqrt((a - c) ** 2 + (b - d) ** 2)
+    return abs(a - c) ** 2 + abs(b - d) ** 2
 
 class Santas:
     def __init__(self, power):
