@@ -1,23 +1,23 @@
-# 11시 7분
-
+import collections
 class Node :
     def __init__(self, number):
         self.number = number
         self.parent = None
         self.left = None
         self.right = None
-        self.authority = 0
+        self.authority = -1
         self.notification = True
 
     def child_change(self, old_child, new_child):
         if self.left == old_child:
             self.left = new_child
-        else:
+
+        elif self.right == old_child:
             self.right = new_child
 
     def put_parent(self, parent):
         self.parent = parent
-        
+
     def put_authority(self, authority):
         self.authority = authority
 
@@ -32,21 +32,27 @@ class Node :
             self.notification = False
         else :
             self.notification = True
+    
+def get_available_notification_count(node, count=0):
+    q = collections.deque()
+    q.append(node)
+    total = 0
 
-def get_available_notification_count(node, count):
-    if not node.left and not node.right:
-        return count
+    while q :
+        count += 1
+        lenq = len(q)
+        for _ in range(lenq):
 
-    left_count = 0
-    if node.left and node.left.authority >= count + 1 and node.left.notification:
-        left_count = get_available_notification_count(node.left, count + 1)
+            now = q.popleft()
+            if now.left and now.left.notification:
+                q.append(now.left)
+                if now.left.authority >= count : total += 1
 
-    right_count = 0
-    if node.right and node.right.authority >= count + 1 and node.right.notification:
-        right_count = get_available_notification_count(node.right, count + 1)
+            if now.right and now.right.notification:
+                q.append(now.right)
+                if now.right.authority >= count : total += 1
+    return total
 
-    if right_count + left_count == 0 : return count
-    return right_count + left_count   
 
 root = Node(0)
 root.put_parent(-1)
