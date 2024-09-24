@@ -1,118 +1,106 @@
-import collections
-class Node :
-    def __init__(self, number):
-        self.number = number
-        self.parent = None
-        self.left = None
-        self.right = None
-        self.authority = -1
-        self.notification = True
+MAX_N = 100001
+MAX_D = 22
 
-    def child_change(self, old_child, new_child):
-        if self.left == old_child:
-            self.left = new_child
+n, q = 0, 0
+a = [0] * MAX_N  # 권한
+p = [0] * MAX_N  # 부모
+val = [0] * MAX_N  # 알림 개수
+noti = [False] * MAX_N  # 알림 상태
+nx = [[0 for _ in range(MAX_D)] for _ in range(MAX_N)]  # 자손 정보
 
-        elif self.right == old_child:
-            self.right = new_child
-
-    def put_parent(self, parent):
-        self.parent = parent
-
-    def put_authority(self, authority):
-        self.authority = authority
-
-    def put_child(self, child):
-        if self.left:
-            self.right = child
-        else :
-            self.left = child 
-
-    def notification_change(self):
-        if self.notification :
-            self.notification = False
-        else :
-            self.notification = True
+def init(inputs):
+    global n, a, p, val, nx
+    for i in range(1, n + 1):
+        p[i] = inputs[i]
+        a[i] = min(inputs[i + n], 20)  # 권한 최대값 20으로 제한
     
-def get_available_notification_count(node, count=0):
-    q = collections.deque()
-    q.append(node)
-    total = 0
+    for i in range(1, n + 1):
+        cur = i
+        x = a[i]
+        nx[cur][x] += 1
+        while p[cur] and x:
+            cur = p[cur]
+            x -= 1
+            if x:
+                nx[cur][x] += 1
+            val[cur] += 1
 
-    while q :
-        count += 1
-        lenq = len(q)
-        for _ in range(lenq):
+def toggle_noti(chat):
+    cur = p[chat]
+    num = 1
+    while cur:
+        for i in range(num, 22):
+            val[cur] += nx[chat][i] if noti[chat] else -nx[chat][i]
+            if i > num:
+                nx[cur][i - num] += nx[chat][i] if noti[chat] else -nx[chat][i]
+        if noti[cur]:
+            break
+        cur = p[cur]
+        num += 1
+    noti[chat] = not noti[chat]
 
-            now = q.popleft()
-            if now.left and now.left.notification:
-                q.append(now.left)
-                if now.left.authority >= count : total += 1
+def change_power(chat, power):
+    bef_power = a[chat]
+    power = min(power, 20)
+    a[chat] = power
 
-            if now.right and now.right.notification:
-                q.append(now.right)
-                if now.right.authority >= count : total += 1
-    return total
+    nx[chat][bef_power] -= 1
+    if not noti[chat]:
+        cur = p[chat]
+        num = 1
+        while cur:
+            if bef_power >= num:
+                val[cur] -= 1
+            if bef_power > num:
+                nx[cur][bef_power - num] -= 1
+            if noti[cur]:
+                break
+            cur = p[cur]
+            num += 1
 
+    nx[chat][power] += 1
+    if not noti[chat]:
+        cur = p[chat]
+        num = 1
+        while cur:
+            if power >= num:
+                val[cur] += 1
+            if power > num:
+                nx[cur][power - num] += 1
+            if noti[cur]:
+                break
+            cur = p[cur]
+            num += 1
 
-root = Node(0)
-root.put_parent(-1)
+def change_parent(chat1, chat2):
+    bef_noti1, bef_noti2 = noti[chat1], noti[chat2]
 
-nodes_dict = {}
-nodes_dict[0] = root 
+    if not noti[chat1]:
+        toggle_noti(chat1)
+    if not noti[chat2]:
+        toggle_noti(chat2)
 
-n, q = map(int,input().split())
-input_line = list(map(int,input().split()))
+    p[chat1], p[chat2] = p[chat2], p[chat1]
 
-for i in range(1,n+1):
-    nodes_dict[i] = Node(i)
+    if not bef_noti1:
+        toggle_noti(chat1)
+    if not bef_noti2:
+        toggle_noti(chat2)
 
-parents = input_line[1:n+1]
-for i in range(0,n):
-    parent = nodes_dict[parents[i]]
-    child = nodes_dict[i+1]
+def print_count(chat):
+    print(val[chat])
 
-    parent.put_child(child)
-    child.put_parent(parent)
+n, q = map(int, input().split())
+inputs = list(map(int, input().split()))
+init(inputs)
 
-authoritys = input_line[n+1:]
-for i in range(0,n):
-    nodes_dict[i+1].put_authority(authoritys[i])
-
-while q > 1:
-    q -= 1
-    input_line = list(map(int, input().split()))
-    commend = input_line[0]
-
-    if commend == 200:
-        target = input_line[1]
-        target_node = nodes_dict[target]
-        target_node.notification_change()
-
-    if commend == 300:    
-        target = input_line[1]
-        authority = input_line[2]
-
-        target_node = nodes_dict[target]
-        target_node.put_authority(authority)
-
-    if commend == 400:  
-        target1 = input_line[1]
-        target_node1 = nodes_dict[target1]
-
-        target2 = input_line[2]
-        target_node2 = nodes_dict[target2]
-
-        target1_parent = target_node1.parent
-        target2_parent = target_node2.parent
-
-        target_node1.put_parent(target1_parent)
-        target_node2.put_parent(target2_parent)  
-
-        target1_parent.child_change(target_node1, target_node2)
-        target2_parent.child_change(target_node2, target_node1)
-
-    if commend == 500:
-        target = input_line[1]
-        target_node = nodes_dict[target]
-        count = get_available_notification_count(target_node,0)
-        print(count)
+for _ in range(q - 1):
+    query = list(map(int, input().split()))
+    if query[0] == 200:
+        toggle_noti(query[1])
+    elif query[0] == 300:
+        change_power(query[1], query[2])
+    elif query[0] == 400:
+        change_parent(query[1], query[2])
+    elif query[0] == 500:
+        print_count(query[1])
