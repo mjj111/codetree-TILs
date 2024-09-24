@@ -12,7 +12,7 @@ def init(inputs):
     global n, a, p, val, nx
     for i in range(1, n + 1):
         p[i] = inputs[i]
-        a[i] = min(inputs[i + n], 20)  # 권한 최대값 20으로 제한
+        a[i] = inputs[i + n]  # 권한 최대값 20으로 제한
     
     for i in range(1, n + 1):
         cur = i
