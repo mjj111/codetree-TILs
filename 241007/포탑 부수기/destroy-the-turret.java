@@ -51,7 +51,6 @@ public class Main {
         Port target = portList.get(portList.size()-1);
 
         attacker.power += N + M;
-        board[attacker.x][attacker.y] = attacker.power;
         attacker.used = count;
         attacker.count = count;
 
