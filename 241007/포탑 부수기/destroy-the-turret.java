@@ -1,11 +1,3 @@
-// N*M개의 포탑
-// 공격력이 줄거나 늘어남
-// 정렬  10
-// 20시 시작
-// 포탄 정렬해주고 맨 앞단과 뒷단이 공격할 애와 공격당할 애다. 
-// 레이저 빔 순차적으로 이동해서 접근 가능할 경우! 해당 경로로 빔쏜다. 
-// 만약 안되면 포탄던져 
-// 공격한 애랑 공격당한 애들은 경로 저장해놨다가 나머지애들 1씩 상승
 import java.util.*;
 import java.io.*;
 
@@ -39,23 +31,16 @@ public class Main {
             }
         }
 
-        int count = 1;
+        int count = 0;
         while(K-- > 0) {
+            count++;
             attack(count);
-            hill(count);;
+            hill(count);
         }
 
         List<Port> portList = new ArrayList<>(portMap.values());
         Collections.sort(portList);
         System.out.println(portList.get(portList.size()-1).power);
-    }
-    private static void printBoard() {
-        for(int  i = 0; i < N; i++) {
-            for(int j = 0; j < M; j++) {
-                System.out.print(board[i][j] + " ");
-            }
-            System.out.println();
-        }
     }
 
     private static void attack(int count) {
@@ -63,30 +48,36 @@ public class Main {
         Collections.sort(portList);
 
         Port attacker = portList.get(0);
-        Port server = portList.get(portList.size()-1);
+        Port target = portList.get(portList.size()-1);
 
         attacker.power += N + M;
         board[attacker.x][attacker.y] = attacker.power;
         attacker.used = count;
         attacker.count = count;
 
-        if(!attacker.laizer(attacker.x, attacker.y, server, count)) {
-            attacker.portAttack(server, count);
+        if(!attacker.laizer(attacker.x, attacker.y, target, count)) {
+            attacker.portAttack(target, count);
         } 
+
+        // 공격 후 상태 업데이트
+        for (Port p : portMap.values()) {
+            board[p.x][p.y] = p.power;
+        }
     }
 
     private static void hill(int count) {
         for(Port p : portMap.values()) {
-            if(p.count == count) continue;
-            p.power += 1;
-            board[p.x][p.y] = p.power;
+            if(p.count != count) {
+                p.power += 1;
+                board[p.x][p.y] = p.power;
+            }
         }
     }
 
     private static class Port implements Comparable<Port> {
         int x, y, power;
         int used = 0;
-        int count = -1;
+        int count = 0;
 
         public Port(int x, int y, int power) {
             this.x = x;
@@ -94,13 +85,6 @@ public class Main {
             this.power = power;
         }
 
-        // 레이저는 쏘면 반대편으로도 간다. 
-        // 우/하/좌/상으로 이동
-        // 발견했다면 flag true로 더이상 움직이지 않는다. 
-        // visited 된 곳 -1 제외 ㅎ 
-        //  해당 좌표에 있는 포탄 조회해서 다 때려준다. 
-        // count 변경  
-        // return ;
         public boolean laizer(int startX, int startY, Port target, int count) {
             Queue<int[]> queue = new LinkedList<>();
             boolean[][] visited = new boolean[N][M];
@@ -114,7 +98,6 @@ public class Main {
                 int x = current[0], y = current[1];
                 
                 if (x == target.x && y == target.y) {
-                    // 경로 찾음, 공격 수행
                     List<int[]> path = getPath(parent, startX, startY, target.x, target.y);
                     performLaserAttack(path, target, count);
                     return true;
@@ -132,7 +115,7 @@ public class Main {
                 }
             }
             
-            return false; // 경로를 찾지 못함
+            return false;
         }
         
         private List<int[]> getPath(int[][] parent, int startX, int startY, int targetX, int targetY) {
@@ -154,14 +137,12 @@ public class Main {
                 int attackedX = pos[0], attackedY = pos[1];
                 String key = attackedX + " " + attackedY;
                 Port attacked = portMap.get(key);
-                if (attackedX == x && attackedY == y) continue; // 본인은 공격 안받음
+                if (attackedX == x && attackedY == y) continue;
 
                 int attackPower = (attackedX == target.x && attackedY == target.y) ? power : power / 2;
                 attacked.power -= attackPower;
                 attacked.count = count;
-                board[attackedX][attackedY] = attacked.power;
 
-                // 포탑이 파괴되었는지 확인
                 if (attacked.power <= 0) {
                     board[attackedX][attackedY] = 0;
                     portMap.remove(key);
@@ -169,25 +150,24 @@ public class Main {
             }
         }
 
-
         public void portAttack(Port target, int count) {
             for(int i = -1; i <= 1; i++) {
                 for(int j = -1; j <= 1; j++){
                     int attackedX = (target.x + i + N) % N;
                     int attackedY = (target.y + j + M) % M;
 
-                    if(attackedX == x && attackedY == y) continue; // 공격자라면 지나감
-                    if(board[attackedX][attackedY]== 0) continue; // 죽은 포탑 지나감 
+                    if(attackedX == x && attackedY == y) continue;
+                    if(board[attackedX][attackedY] == 0) continue;
                     
                     Port attacked = portMap.get(attackedX + " " + attackedY);
                      
-                    int attackPower = (i==0 && j==0) ? power : power/ 2; 
+                    int attackPower = (i==0 && j==0) ? power : power / 2; 
                     attacked.power -= attackPower;
                     attacked.count = count;
 
-                    if(attacked.power <= 0) { // 포탑이 죽으면 board 0으로 표시하고 Map에서 지움 
+                    if(attacked.power <= 0) {
                         board[attackedX][attackedY] = 0;
-                        portMap.remove(attackedX + "" + attackedY);
+                        portMap.remove(attackedX + " " + attackedY);
                     }
                 }
             }
@@ -195,16 +175,11 @@ public class Main {
 
         @Override
         public int compareTo(Port op) {
-            if(this.power == op.power) {
-                if(this.used == op.used) {
-                    if(this.x + this.y == op.x + op.y) {
-                        return this.y - op.y;
-                    }
-                    return this.x + this.y - op.x + op.y;
-                }
-                return this.used - op.used;
-            }
-            return this.power - op.power;
+            if(this.power != op.power) return this.power - op.power;
+            if(this.used != op.used) return op.used - this.used;
+            int thisSum = this.x + this.y, opSum = op.x + op.y;
+            if(thisSum != opSum) return opSum - thisSum;
+            return op.y - this.y;
         }
     }
 }
