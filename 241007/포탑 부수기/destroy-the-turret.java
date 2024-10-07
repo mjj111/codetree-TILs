@@ -32,7 +32,7 @@ public class Main {
         }
 
         int count = 0;
-        while(K-- > 0) {
+        while(K-- > 0 || portMap.size() > 1) {
             count++;
             attack(count);
             hill(count);
