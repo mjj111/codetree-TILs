@@ -1,5 +1,3 @@
-//5시 23분 시작 // 6시 23분 휴식
-
 import java.io.*;
 import java.util.*;
 
@@ -94,7 +92,7 @@ public class Main {
 
         for (int i = startX; i <= endX; i++) {
             for (int j = startY; j <= endY; j++) {
-                if (board[i][j] >= 1 && board[i][j] <= 9) board[i][j] -= 1;
+                if (board[i][j] >= 1) board[i][j] -= 1;
             }
         }
         
@@ -112,8 +110,10 @@ public class Main {
 
         for (int i = 0; i <= squareSize; i++) {
             for (int j = 0; j <= squareSize; j++) {
+
                 board[startX + i][startY + j] = copyBoard[i][j];
-                if(board[startX + i][startY + j] == -2) {
+
+                if (board[startX + i][startY + j] == -2) {
                     exit[0] = startX + i;
                     exit[1] = startY + j;
                 }
@@ -124,8 +124,10 @@ public class Main {
             if (person.x >= startX && person.x <= endX && person.y >= startY && person.y <= endY && person.isIn) {
                 int relativeX = person.x - startX;
                 int relativeY = person.y - startY;
+
                 int newX = startX + relativeY;
                 int newY = startY + (squareSize - relativeX);
+
                 person.x = newX;
                 person.y = newY;
             }
@@ -141,15 +143,6 @@ public class Main {
 
     private static int getDistance(int x, int y) {
         return Math.abs(exit[0] - x) + Math.abs(exit[1] - y);
-    }
-
-    private static void printBoard() {
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                System.out.print(board[i][j] + " ");
-            }
-            System.out.println();
-        }
     }
 
     private static boolean isOut(int x, int y) {
@@ -173,7 +166,6 @@ public class Main {
 
         public void move() {
             int nowDistance = getDistance(x, y);
-            board[x][y] = 0;
             for (int i = 0; i < 4; i++) {
                 int nx = x + dx[i];
                 int ny = y + dy[i];
@@ -185,31 +177,23 @@ public class Main {
                 this.x = nx;
                 this.y = ny;
                 moveCount += 1;
-                if (exit[0] == x && exit[1] == y) {
-                    isIn = false;
-                    return;
-                }
-
-                board[x][y] = -1;
+                if (exit[0] == x && exit[1] == y) isIn = false;
                 return;
             }
-            board[x][y] = -1;
         }
 
         @Override
         public int compareTo(Person op) {
-             // 현재 사람이 탈출한 경우 최후위로 보냄
             if (!this.isIn && op.isIn) {
                 return 1;
             }
-            // 비교 대상 사람이 탈출한 경우 그 사람이 뒤로 감
             if (this.isIn && !op.isIn) {
                 return -1;
             }
-            // 두 사람 모두 탈출한 경우 동등하게 처리
             if (!this.isIn && !op.isIn) {
                 return 0;
             }
+
             int thisDistance = getDistance(this.x, this.y);
             int opDistance = getDistance(op.x, op.y);
 
