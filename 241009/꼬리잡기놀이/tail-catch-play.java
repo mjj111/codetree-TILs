@@ -49,7 +49,7 @@
 import java.util.*;
 public class Main {
 
-    private static int N, M, K;
+    private static int N, M, K,round;
 
     private static int[][] board;    
     private static int[][] peopleBoard;
@@ -97,12 +97,9 @@ public class Main {
             findTail(i,head,1);
         }
 
-        int round = 0;
         while(K-- > 0) {
-            round ++;
             peopleMove();
             ballAttack();
-            // printPeople(round);
         }
 
         int answer =0;
@@ -112,8 +109,7 @@ public class Main {
         System.out.println(answer);
     }
 
-    private static void printPeople(int round) {
-        System.out.println("현재 "+ round + "라운드");
+    private static void printPeople() {
         for(int i =0; i < N; i++) {
             System.out.println();
             for(int j = 0; j < N; j++) {
@@ -130,11 +126,11 @@ public class Main {
         int y = line[1];
         int vDir = (line[2] + 1) % 4;
 
-
         // 3. 공을 던졌을 때 최초 맞은 사람은 점수획득 
         while(!isOut(x,y)) {
             int value = peopleBoard[x][y];
             if(value != 0) {
+                
                 //peopleBoard에서 만난 녀석의 값 Math.pow(값, 2) 줄 점수를 계산한다.
                 int plusScore =(int)Math.pow(value, 2);
                 // 녀석의 팀을 탐색한다.
@@ -145,6 +141,7 @@ public class Main {
 
                 // 해당 팀의 점수를 추가해준다.  
                 foundTeam.point += plusScore;
+                foundTeam = null;
                 break;
             }
             // 해당bimDir 방향으로 bim을 계속 움직인다. 
@@ -159,30 +156,28 @@ public class Main {
 
     private static void findTeam(int x, int y) {
         int value = peopleBoard[x][y];
+        visited[x][y] = true;
 
-        if(value == 1|| value == 3) {
-
-            // 머리 찾음
-            if(value == 1) {
-                for(Team t : teamMap.values()) {
-                    if(t.headX == x && t.headY == y) {
-                        foundTeam = t;
-                    }
+        // 머리 찾음
+        if(value == 1) {
+            for(Team t : teamMap.values()) {
+                if(t.headX == x && t.headY == y) {
+                    foundTeam = t;
+                    return;
                 }
             }
-
-            // 꼬리찾음 
-            if(value == 3) {
-                for(Team t : teamMap.values()) {
-                    if(t.tailX == x && t.tailY == y) {
-                        foundTeam = t;
-                    }
-                }
-            }
-            return;
         }
 
-        visited[x][y] = true;
+        // 꼬리찾음 
+        if(value == 3) {
+            for(Team t : teamMap.values()) {
+                if(t.tailX == x && t.tailY == y) {
+                    foundTeam = t;
+                    return;
+                }
+            }
+        }
+
 
         for(int i = 0; i < 4; i++) {
             int nx = x + dx[i];
@@ -198,15 +193,15 @@ public class Main {
     }
 
     private static void moveLine() {
-        // System.out.println("디버깅");
         int xLine = line[0];
         int yLine = line[1];
         int dir = line[2];
+
         int nx = xLine + dx[dir];
         int ny = yLine + dy[dir];
         // 만약 벽에 부딪히면 dir 90도 회전
         if(isOut(nx,ny)) {
-            line[0] = (line[0] + 1) % 4;
+            line[2] = (line[2] + 1) % 4;
             nx = xLine;
             ny = yLine;
         }
