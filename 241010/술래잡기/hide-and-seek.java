@@ -59,11 +59,13 @@ public class Main {
             peopleMove();
             sulMove();
             sulChangeDirection();
+            // printPeople();
             calculateScore();
         }  
         System.out.println(answer);  
     }
     private static void printPeople() {
+        System.out.println();
         for(int i = 0; i < N; i++) {
             for(int j = 0; j < N; j++) {
                 if(tree[i][j]) {
