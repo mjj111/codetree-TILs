@@ -1,231 +1,263 @@
-//1시 시작 
+import java.util.Scanner;
+import java.util.ArrayList;
 
-import java.util.*;
+class Pair {
+    int x, y;
+    
+    public Pair(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public boolean isSame(Pair p) {
+        return this.x == p.x && this.y == p.y;
+    }
+}
+
 public class Main {
+    public static final int DIR_NUM = 4;
+    public static final int MAX_N = 100;
+    
+    // 변수 선언
+    public static int n, m, h, k;
+    // 각 칸에 있는 도망자 정보를 관리합니다.
+    // 도망자의 방향만 저장하면 충분합니다.
+    public static ArrayList<Integer>[][] hiders = new ArrayList[MAX_N][MAX_N];
+    public static ArrayList<Integer>[][] nextHiders = new ArrayList[MAX_N][MAX_N];
+    public static boolean[][] tree = new boolean[MAX_N][MAX_N];
+    
+    // 정방향 기준으로
+    // 현재 위치에서 술래가 움직여야 할 방향을 관리합니다.
+    public static int[][] seekerNextDir = new int[MAX_N][MAX_N];
+    // 역방향 기준으로
+    // 현재 위치에서 술래가 움직여야 할 방향을 관리합니다.
+    public static int[][] seekerRevDir = new int[MAX_N][MAX_N];
+    
+    // 술래의 현재 위치를 나타냅니다.
+    public static Pair seekerPos;
+    // 술래가 움직이는 방향이 정방향이면 true / 아니라면 false입니다.
+    public static boolean forwardFacing = true;
+    
+    public static int ans;
+    
+    // 정중앙으로부터 끝까지 움직이는 경로를 계산해줍니다.
+    public static void initializeSeekerPath() {
+        // 상우하좌 순서대로 넣어줍니다.
+        int[] dx = new int[]{-1, 0, 1,  0};
+        int[] dy = new int[]{0 , 1, 0, -1};
+    
+        // 시작 위치와 방향, 
+        // 해당 방향으로 이동할 횟수를 설정합니다. 
+        int currX = n / 2, currY = n / 2;
+        int moveDir = 0, moveNum = 1;
+    
+        while(currX > 0 || currY > 0) {
+            // moveNum 만큼 이동합니다.
+            for(int i = 0; i < moveNum; i++) {
+                seekerNextDir[currX][currY] = moveDir;
+                currX += dx[moveDir]; currY += dy[moveDir];
+                seekerRevDir[currX][currY] = (moveDir < 2) ? (moveDir + 2) : (moveDir - 2);
+    
+                // 이동하는 도중 (0, 0)으로 오게 되면,
+                // 움직이는 것을 종료합니다.
+                if(currX == 0 && currY == 0)
+                    break;
+            }
+            
+            // 방향을 바꿉니다.
+            moveDir = (moveDir + 1) % 4;
+            // 만약 현재 방향이 위 혹은 아래가 된 경우에는
+            // 특정 방향으로 움직여야 할 횟수를 1 증가시킵니다.
+            if(moveDir == 0 || moveDir == 2)
+                moveNum++;
+        }
+    }
+    
+    // 격자 내에 있는지를 판단합니다.
+    public static boolean inRange(int x, int y) {
+        return 0 <= x && x < n && 0 <= y && y < n;
+    }
+    
+    public static void hiderMove(int x, int y, int moveDir) {
+        // 좌우하상 순서대로 넣어줍니다.
+        int[] dx = new int[]{0 , 0, 1, -1};
+        int[] dy = new int[]{-1, 1, 0,  0};
+    
+        int nx = x + dx[moveDir], ny = y + dy[moveDir];
+        // Step 1.
+        // 만약 격자를 벗어난다면
+        // 우선 방향을 틀어줍니다.
+        if(!inRange(nx, ny)) {
+            // 0 <-> 1 , 2 <-> 3이 되어야 합니다.
+            moveDir = (moveDir < 2) ? (1 - moveDir) : (5 - moveDir);
+            nx = x + dx[moveDir]; ny = y + dy[moveDir];
+        }
+        
+        // Step 2.
+        // 그 다음 위치에 술래가 없다면 움직여줍니다.
+        if(!new Pair(nx, ny).isSame(seekerPos))
+            nextHiders[nx][ny].add(moveDir);
+        // 술래가 있다면 더 움직이지 않습니다.
+        else
+            nextHiders[x][y].add(moveDir);
+    }
+    
+    public static int distFromSeeker(int x, int y) {
+         // 현재 술래의 위치를 불러옵니다.
+        int seekerX = seekerPos.x;
+        int seekerY = seekerPos.y;
+    
+        return Math.abs(seekerX - x) + Math.abs(seekerY - y);
+    }
+    
+    public static void hiderMoveAll() {
+        // Step 1. next hider를 초기화해줍니다.
+        for(int i = 0; i < n; i++)
+            for(int j = 0; j < n; j++)
+                nextHiders[i][j] = new ArrayList<>();
+        
+        // Step 2. hider를 전부 움직여줍니다.
+        for(int i = 0; i < n; i++)
+            for(int j = 0; j < n; j++) {
+                // 술래와의 거리가 3 이내인 도망자들에 대해서만
+                // 움직여줍니다.
+                if(distFromSeeker(i, j) <= 3) {
+                    for(int k = 0; k < hiders[i][j].size(); k++)
+                        hiderMove(i, j, hiders[i][j].get(k));
+                }
+                // 그렇지 않다면 현재 위치 그대로 넣어줍니다.
+                else {
+                    for(int k = 0; k < hiders[i][j].size(); k++)
+                        nextHiders[i][j].add(hiders[i][j].get(k));
+                }
+            }
+    
+        // Step 3. next hider값을 옮겨줍니다.
+        for(int i = 0; i < n; i++)
+            for(int j = 0; j < n; j++)
+                hiders[i][j] = new ArrayList<>(nextHiders[i][j]);
+    }
+    
+    // 현재 술래가 바라보는 방향을 가져옵니다.
+    public static int getSeekerDir() {
+        // 현재 술래의 위치를 불러옵니다.
+        int x = seekerPos.x;
+        int y = seekerPos.y;
+    
+        // 어느 방향으로 움직여야 하는지에 대한 정보를 가져옵니다.
+        int moveDir;
+        if(forwardFacing)
+            moveDir = seekerNextDir[x][y];
+        else
+            moveDir = seekerRevDir[x][y];
+        
+        return moveDir;
+    }
+    
+    public static void checkFacing() {
+        // Case 1. 정방향으로 끝에 다다른 경우라면, 방향을 바꿔줍니다.
+        if(seekerPos.isSame(new Pair(0, 0)) && forwardFacing)
+            forwardFacing = false;
+        // Case 2. 역방향으로 끝에 다다른 경우여도, 방향을 바꿔줍니다.
+        if(seekerPos.isSame(new Pair(n / 2, n / 2)) && !forwardFacing)
+            forwardFacing = true;
+    }
+    
+    public static void seekerMove() {
+        int x = seekerPos.x;
+        int y = seekerPos.y;
+    
+        // 상우하좌 순서대로 넣어줍니다.
+        int[] dx = new int[]{-1, 0, 1,  0};
+        int[] dy = new int[]{0 , 1, 0, -1};
+    
+        int moveDir = getSeekerDir();
+    
+        // 술래를 한 칸 움직여줍니다.
+        seekerPos = new Pair(x + dx[moveDir], y + dy[moveDir]);
+        
+        // 끝에 도달했다면 방향을 바꿔줘야 합니다.
+        checkFacing();
+    }
+    
+    public static void getScore(int t) {
+        // 상우하좌 순서대로 넣어줍니다.
+        int[] dx = new int[]{-1, 0, 1,  0};
+        int[] dy = new int[]{0 , 1, 0, -1};
+    
+        // 현재 술래의 위치를 불러옵니다.
+        int x = seekerPos.x;
+        int y = seekerPos.y;
+        
+        // 술래의 방향을 불러옵니다.
+        int moveDir = getSeekerDir();
+        
+        // 3칸을 바라봅니다.
+        for(int dist = 0; dist < 3; dist++) {
+            int nx = x + dist * dx[moveDir], ny = y + dist * dy[moveDir];
+            
+            // 격자를 벗어나지 않으며 나무가 없는 위치라면 
+            // 도망자들을 전부 잡게 됩니다.
+            if(inRange(nx, ny) && !tree[nx][ny]) {
+                // 해당 위치의 도망자 수 만큼 점수를 얻게 됩니다.
+                ans += t * hiders[nx][ny].size();
+    
+                // 도망자들이 사라지게 됩니다.
+                hiders[nx][ny] = new ArrayList<>();
+            }
+        }
+    }
+    
+    public static void simulate(int t) {
+        // 도망자가 움직입니다.
+        hiderMoveAll();
+    
+        // 술래가 움직입니다.
+        seekerMove();
+        
+        // 점수를 얻습니다.
+        getScore(t);
+    }
 
-    private static int N, M, H, K;
-
-    private static Map<String, Set<Integer>> board;
-    private static Map<Integer, Person> people;
-    private static boolean[][] tree;
-
-    private static int sulX, sulY, sulDir, len;
-    private static boolean[][] visited;
-    private static int sulRound, answer;
-    private static boolean right;
-
-    private static int[][] personDx = new int[][]{{0,0},{1,-1}}; // [0] 우좌 [1] 하상 
-    private static int[][] personDy = new int[][]{{1,-1},{0,0}};
-
-    private static int[] sulDx = new int[]{-1,0,1,0};
-    private static int[] sulDy = new int[]{0,1,0,-1};
-
-    private static int realRound;
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
+        // 입력: 
+        n = sc.nextInt();
+        m = sc.nextInt();
+        h = sc.nextInt();
+        k = sc.nextInt();
 
-        N = sc.nextInt();
-        M = sc.nextInt();
-        H = sc.nextInt();
-        K = sc.nextInt();
+        for(int i = 0; i < n; i++)
+            for(int j = 0; j < n; j++)
+                hiders[i][j] = new ArrayList<>();
 
-        tree = new boolean[N][N];
-        people = new HashMap<>();
-        board = new HashMap<>();
-
-        for(int i = 0; i < M; i++) {
-
-            int x = sc.nextInt() - 1;
-            int y = sc.nextInt() - 1;
+        // 술래 정보를 입력받습니다.
+        while(m-- > 0) {
+            int x = sc.nextInt();
+            int y = sc.nextInt();
             int d = sc.nextInt();
-
-            people.put(i, new Person(i, x, y, d)); 
-            board.putIfAbsent(x + " " + y, new HashSet<>());
-            board.get(x + " " + y).add(i);
+            hiders[x - 1][y - 1].add(d);
         }
 
-        for(int i = 0; i < H; i++) {
-            int x = sc.nextInt() - 1;
-            int y = sc.nextInt() - 1;
-            tree[x][y] = true;
+        // 나무 정보를 입력받습니다.
+        while(h-- > 0) {
+            int x = sc.nextInt();
+            int y = sc.nextInt();
+            tree[x - 1][y - 1] = true;
         }
 
-        sulInit();
+        // 술래의 처음 위치를 설정합니다.
+        seekerPos = new Pair(n / 2, n / 2);
 
-        answer = 0;
-        realRound = 0;
-        while(hasLive() && K-- > 0) {
-            realRound++;
-            peopleMove();
-            sulMove();
-            sulChangeDirection();
-            // printPeople();
-            calculateScore();
-        }  
-        System.out.println(answer);  
-    }
-    private static void printPeople() {
-        System.out.println();
-        for(int i = 0; i < N; i++) {
-            for(int j = 0; j < N; j++) {
-                if(tree[i][j]) {
-                    System.out.print("T ");
-                    continue;
-                }
-                if(i == sulX && j == sulY) {
-                    System.out.print(3 + " ");
-                    continue;
-                }
-                if(board.containsKey(i + " " + j) && board.get(i + " " + j).size() >= 1) {
-                    System.out.print(1 + " ");
-                }
-                else {
-                    System.out.print(0 + " ");
-                }
-            }
-            System.out.println();
-        }
-    }
+        // 술래잡기 시작 전에
+        // 구현상의 편의를 위해
+        // 술래 경로 정보를 미리 계산합니다.
+        initializeSeekerPath();
 
-    // 4. 술래 점수 계산 ()
-    private static void calculateScore() {
-        int killCount = 0;
-        int nx = sulX;
-        int ny = sulY;
-
-        for(int i = 0; i < 3; i++) {
-            if(isOut(nx,ny)) continue;
-            if(!tree[nx][ny] && board.containsKey(nx + " " + ny)) {
-                
-                Set<Integer> killed = board.get(nx + " " + ny);
-                killCount += killed.size();
-
-                for(int dead : killed) {
-                    people.remove(dead);
-                }
-                board.remove(nx + " " + ny);
-            }
-            nx += sulDx[sulDir];
-            ny += sulDy[sulDir];
-        }
-        answer+= realRound * killCount;
-    }
-    // 3. 술래 방향 전환()
-    private static void sulChangeDirection() {
-        if(sulX == N/2 && sulY == N/2) {
-            sulInit();
-            return;
-        }
-
-        if((sulX == 0 && sulY == 0) || (sulX == 0 && sulY == N-1) || (sulX == N-1 && sulY == 0) || (sulX == N-1 && sulY == N-1)) {
-            if(allVisited()) {
-                visited = new boolean[N][N];
-                right = false;
-                sulDir = (sulDir + 2) % 4;
-                sulRound += 1;
-                return;
-            }
-        }
-
-        turnSul();
-    }
-
-    private static void turnSul() {
-        int value = right ? 1 : -1;
-        if(sulRound % 2 == 0) len += value;
-        sulDir = ((sulDir + value) + 4) % 4;
-        sulRound += value;
-    }
-
-    private static boolean allVisited() {
-        for(int i = 0; i < N; i++) {
-            for(int j = 0; j < N; j++) {
-                if(!visited[i][j]) return false;
-            }
-        }
-        return true;
-    }
-
-    private static void sulInit() {
-        sulX = N/2;
-        sulY = N/2;
-        sulDir = 0;
-        sulRound = 1;
-        len = 1;
-        visited = new boolean[N][N];
-        right = true;
-    }
-
-    // 2. 술래 움직인다()
-    private static void sulMove() {
-        visited[sulX][sulY] = true;
-
-        for(int i = 0; i < len; i++) {
-            int nx = sulX + sulDx[sulDir];
-            int ny = sulY + sulDy[sulDir];
-
-            if(isOut(nx,ny)) break;
-
-            visited[nx][ny] = true;
-            sulX = nx;
-            sulY = ny;
-        }
-    }
-
-    // 1. 사람들 움직인다()
-    // people에 있는 사람들(살아있다)을 탐색한다.
-    // 만약 술래와의 거리가 3이하라면 움직인다. move()
-    private static void peopleMove() {
-        for(Person p : people.values()) {
-            if(p.isClose()) p.move();
-        }
-    }
-
-    private static boolean hasLive() {
-        if(people.values().size() !=0) return true;
-        return false;
-    }
-
-    private static class Person {
-        int i,x,y,d;
-        int dir = 0;
-        // i,x,y,d, dir 
-
-        public Person(int i, int x, int y, int d) {
-            this.i = i;
-            this.x = x;
-            this.y = y;
-            this.d = d - 1;
-        }
-
-        public boolean isClose() {
-            return 3 >= Math.abs(sulX-x) + Math.abs(sulY-y);
-        }
-
-        public void move() {
-            board.get(x + " " + y).remove(this.i);
-            int nx = x + personDx[d][dir];
-            int ny = y + personDy[d][dir];
-
-            if(isOut(nx, ny)) {
-                this.dir = (this.dir + 1) % 2;
-                nx = x + personDx[d][dir];
-                ny = y + personDy[d][dir];
-            }
-
-            if(nx == sulX && ny == sulY) {
-                board.get(x + " " + y).add(this.i);
-                return;
-            }else { 
-                board.putIfAbsent(nx + " " + ny, new HashSet<>());
-                board.get(nx + " " + ny).add(this.i);
-                x = nx;
-                y = ny;
-            }
-        }
-    }
-
-    private static boolean isOut(int x, int y) {
-        return x < 0 || x >= N || y < 0 || y >= N;
+        // k번에 걸쳐 술래잡기를 진행합니다.
+        for(int t = 1; t <= k; t++)
+            simulate(t);
+        
+        System.out.print(ans);
     }
 }
