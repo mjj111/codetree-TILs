@@ -118,7 +118,6 @@ public class Main {
             total += maxCount;
 
             if(rotatedBoard == null) break;
-            if(total == 0) break;
             while(rotatedBoard != null) {
                 copyB(board, rotatedBoard);
                 for(int y = 0; y < 5; y++) {
