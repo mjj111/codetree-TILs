@@ -114,7 +114,6 @@ public class Main {
             Pairy now = pairys.get(i);
             now.golemMove();
             now.selfMove();
-            // printGolem(i);
         }
         System.out.println(answer);
     }
@@ -129,19 +128,9 @@ public class Main {
         return x < 0 || x >= R+3 || y < 0 || y >= C;
     }
 
-    private static void printGolem(int ii) {
-        System.out.println(ii + "번째 라운드");
-        for(int i = 0 ; i < R+3; i++) {
-            for(int j = 0; j < C; j++) {
-                if(exit[i][j]) System.out.print(-1 + " ");
-                else System.out.print(board[i][j] + " ");
-            }
-            System.out.println();
-        }
-    }
-
     private static class Pairy {
-        int id, x,y,d;
+        int id,x,y,d;
+
         public Pairy(int id, int x, int y, int d) {
             this.id = id;
             this.x = x;
@@ -167,7 +156,7 @@ public class Main {
             int[] side = {x, y+value*2};
             int[] down = {x+1, y+value};
 
-            if(isOut(up) || isOut(side) || isOut(down)) return false; //범위 밖 
+            if(isOut(up) || isOut(side) || isOut(down)) return false; //범위 밖
             if(board[up[0]][up[1]] != 0) return false; // 이미 골렘 
             if(board[side[0]][side[1]] != 0) return false; 
             if(board[down[0]][down[1]] != 0) return false;  
@@ -203,13 +192,7 @@ public class Main {
                 break;
             }
         }
-        public void selfMove() {
-            if(x <= 3) {
-                board = new int[R+3][C];
-                exit = new boolean[R+3][C];
-                return;
-            }
-
+        private void drawToBoard() {
             board[x][y] = this.id;
             for(int i = 0; i < 4; i++) {
                 int nx = x + dx[i];
@@ -217,13 +200,22 @@ public class Main {
                 board[nx][ny] = this.id;
                 if(i == d) exit[nx][ny] = true;
             }
+        }
+        public void selfMove() {
+            if(x <= 3) {
+                board = new int[R+3][C];
+                exit = new boolean[R+3][C];
+                return;
+            }
+
+            drawToBoard();
 
             boolean[][] visited = new boolean[R+3][C];
             visited[x][y] = true;
 
             Deque<int[]> dq = new LinkedList<>();
             dq.add(new int[]{x,y,id});
-            int maxRow = y;
+            int maxRow = -1;
 
             while(!dq.isEmpty()) {
                 int now[] = dq.removeFirst();
