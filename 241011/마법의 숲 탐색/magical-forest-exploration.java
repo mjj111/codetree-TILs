@@ -204,7 +204,7 @@ public class Main {
             }
         }
         public void selfMove() {
-            if(x <= 2) {
+            if(x <= 3) {
                 board = new int[R+3][C];
                 exit = new boolean[R+3][C];
                 return;
