@@ -1,64 +1,6 @@
 // 6시 30분 시작 
 
-// 수도 코드
-// K와 M을 입력받는다.
-// 5개의 줄을 걸쳐 board격자를 채운다. 해당 격자는 전역변수다. 
-// M개의 조각 번호가 주어진다.  전역변수다. 
-// wallIndex를 전역변수로 0을 설정한다. 
 
-// K만큼 반복한다.
-// total을 전역변수로 0으로 선언해준다. 
-// maxCount = 0으로 전역변수 선언한다. 
-// rotatedBoard를 null로 설정한다. 
-// 반복문을 통해 열부터 행순서(열증가 행증가) 방식으로 중심 구간에 값을 갖고 int y = 1; y <=3; y++ int x = 1; x<=3; x++
-// 3번(90, 180,270) rotate한다. 
-
-// rotate할 때마다,
-// (현재 주어진 그림에서 유적 수를 탐색)현재 유적수를 확인한다. 
-// tmpBoard로 board를 복사해준다. 
-// vistied boolean[][]을 선언한다. 
-// int count를 선언한다. 
-// 반복문을 통해 visited가 되지 않은녀석을 bfs 동작시키고 count를 반환하게 한다.
-// 만약 count가 maxCount를 초과한다면 갱신해주고, rotatedBoard도 갱신해준다. 
-
-// rotate한 번 더한다. (복구)
-
-// total에 maxCount를 추가해준다. 
-// rotatedBoard가 null이라면 (유적을 찾을 수 없었다는 것) break 한다. 
-
-// rotatedBoard가 널이 아닌동안 반복한다. 
-//  board를 rotatedBoard로 갱신해준다. 
-// 열부터 행순서(열은 증가, 행은 감소)순으로 접근한다. for(int y = 0; y < 5; y++) for(int x = 4; x >=0; x--)
-//  만약 board[x][y] 가 0이라면 해당 값에 채워주고 wallIndex값을 상승시킨다.
-// maxCount를 0으로 설정한다. 
-// (현재 주어진 그림에서 유적 수를 탐색)현재 유적수를 확인한다.
-// total에 maxCount를 추가해준다.  
-
-// total이 0이 아니라면 출력한다. 만약 total이 0이라면 break한다. 
-
-//---------------
-
-// bfs 구현
-// int tmpCount를 선언한다.
-// 주어진 숫자를 확인한다.
-// 인덱스와 값을 기반으로 탐색한다. tmpBoard를 0으로 그려준다.(List<int[]> history에 담아준다. )
-// 만약 3번 이상 가지 못했다면 history를 따라 board 값으로 바꿔준다. 0을 반환한다.
-// 만약 3번 이상 가게 됬다면 tmpCount를 반환한다.
-
-// rotate(mx,my)
-// int sx = mx - 1;
-// int sy = my -1;
-// int[][] tmp = new int[3][3];
-// for(int i = 0; i < 3; i++) {
-//     for(int j = 0; j < 3; j++) {
-//         tmp[i][j] = board[sy-j+2][sx - i + 2];
-//     }
-// }
-// for(int i = 0; i < 3; i++) {
-//     for(int j = 0; j < 3; j++) {
-//         board[sx+i][sy+j] = tmp[i][j];
-//     }
-// }
 import java.util.*;
 public class Main {
     private static int K, M;
