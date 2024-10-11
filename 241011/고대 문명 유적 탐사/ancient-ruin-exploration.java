@@ -104,8 +104,8 @@ public class Main {
             maxCount = 0;
             direction = 4;
             rotatedBoard = null;
-            for(int y = 1; y <= 3; y++) {
-                for(int x = 1; x <= 3; x++) {
+            for(int x = 1; x <= 3; x++) {
+                for(int y = 1; y <= 3; y++) {
 
                     for(int i = 1; i <=3; i++) {
                         rotate(x,y);
@@ -120,6 +120,7 @@ public class Main {
             if(rotatedBoard == null) break;
             while(rotatedBoard != null) {
                 copyB(board, rotatedBoard);
+                // printBoard();
                 for(int y = 0; y < 5; y++) {
                     for(int x = 4; x >= 0; x--) {
                         if(board[x][y] == 0) {
@@ -215,11 +216,22 @@ public class Main {
             }
         }
 
-        if(count > maxCount || (count == maxCount && dir < direction)) {
+        // 전보다 크면 안묻고 바꿔준다. 
+        if(count > maxCount) {
             maxCount = count;
             rotatedBoard = tmpBoard;
             direction = dir;
+            return;
+        } 
+
+        // 만약 같은데, 각도가 더 작다면 바꿔준다. 
+        if(count == maxCount && dir < direction) {
+            maxCount = count;
+            rotatedBoard = tmpBoard;
+            direction = dir;
+            return;
         }
+        // 만약 값도, 각도도 같다면 필요없다 지나간다. 현재가 가장 작은 행과 열이다.
     }
     private static void rotate(int mx, int my) {
         int sx = mx - 1;
