@@ -149,16 +149,6 @@ public class Main {
             this.d = d;
         }
 
-        private boolean nowOk() {
-            if(isOut(x,y)) return false; 
-            for(int i = 0; i < 4; i++) {
-                int nx = x + dx[i];
-                int ny = y + dy[i];
-                if(isOut(nx,ny)) return false; 
-            }
-            return true;
-        }
-
         private boolean canDown() {
             int[] lD= {x+1, y-1};
             int[] mD = {x+2, y};
@@ -194,7 +184,6 @@ public class Main {
         
         public void golemMove() {
             while(true) {
-                if(!nowOk()) break;
                 if(canDown()) {
                     x = x + 1;
                     continue;
@@ -216,7 +205,6 @@ public class Main {
         }
         public void selfMove() {
             if(x <= 3) {
-                // System.out.println("펑 터짐");
                 board = new int[R+3][C];
                 exit = new boolean[R+3][C];
                 return;
@@ -265,7 +253,6 @@ public class Main {
                     }
                 }
             }
-            // System.out.println(maxRow-2);
             if(maxRow -2 >= 1) {
                 answer += (maxRow-2);
             }
