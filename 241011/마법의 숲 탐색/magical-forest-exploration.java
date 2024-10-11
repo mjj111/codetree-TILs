@@ -204,7 +204,7 @@ public class Main {
             }
         }
         public void selfMove() {
-            if(x <= 3) {
+            if(x <= 2) {
                 board = new int[R+3][C];
                 exit = new boolean[R+3][C];
                 return;
@@ -253,7 +253,8 @@ public class Main {
                     }
                 }
             }
-            if(maxRow -2 >= 3) {
+
+            if(maxRow -2 >= 1) {
                 answer += (maxRow-2);
             }
         }
