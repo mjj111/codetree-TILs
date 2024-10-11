@@ -209,36 +209,17 @@ public class Main {
         int count = 0;
         for(int i = 0; i < 5; i++) {
             for(int j = 0; j < 5; j++) {
-                if(visited[i][j]) continue;
-                count += bfs(visited,i,j,tmpBoard);
-            }
-        }
-        // 각도를 신경 써야하고
-        if(dir >= 1) {
-            //만약 지금 값이 더 크다면! 그냥 바꿔줌 
-            if(count > maxCount) {
-                maxCount = count;
-                rotatedBoard = tmpBoard;
-                direction = dir;
-                return; 
-            }
-            //근데 만약 같다면?!
-            else if(count == maxCount) {
-                //현재 각도가 더 낮으면 지금걸로 교체
-                if(dir < direction) {
-                    maxCount = count;
-                    rotatedBoard = tmpBoard;
-                    direction = dir;
-                    return; 
+                if(!visited[i][j] && tmpBoard[i][j] != 0) {
+                    count += bfs(visited, i, j, tmpBoard);
                 }
             }
-        } 
-        // 새로 넣어주고 check하는거라 각도 신경 안씀 
-        if(dir == 0 && count > maxCount) {
+        }
+
+        if(count > maxCount || (count == maxCount && dir < direction)) {
             maxCount = count;
             rotatedBoard = tmpBoard;
-            return; 
-        }  
+            direction = dir;
+        }
     }
     private static void rotate(int mx, int my) {
         int sx = mx - 1;
