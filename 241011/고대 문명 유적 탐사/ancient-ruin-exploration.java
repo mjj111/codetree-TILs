@@ -102,7 +102,7 @@ public class Main {
         while(K-->0) {
             total = 0;
             maxCount = 0;
-            direction = 5;
+            direction = 4;
             rotatedBoard = null;
             for(int y = 1; y <= 3; y++) {
                 for(int x = 1; x <= 3; x++) {
