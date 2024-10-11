@@ -194,7 +194,7 @@ public class Main {
         
         public void golemMove() {
             while(true) {
-                // if(!nowOk()) break;
+                if(!nowOk()) break;
                 if(canDown()) {
                     x = x + 1;
                     continue;
