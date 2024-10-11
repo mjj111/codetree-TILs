@@ -253,7 +253,7 @@ public class Main {
                     }
                 }
             }
-            if(maxRow -2 >= 2) {
+            if(maxRow -2 >= 3) {
                 answer += (maxRow-2);
             }
         }
